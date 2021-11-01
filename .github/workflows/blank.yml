@@ -1,0 +1,90 @@
+name: Make TWRP Device
+
+on:
+  workflow_dispatch:
+    inputs:
+      LIBRARY_NAME:
+        description: 'LIBRARY_NAME'
+        required: true
+        default: 'Twrp_Device_Genter'
+      IMG_URL:
+        description: 'IMG_URL'
+        required: true
+        default: 'https://github.com/Xpsoted/android_device_qualcomm_qrd855-TWRP'
+
+jobs:
+  build:
+    if: github.event.repository.owner.id == github.event.sender.id
+    runs-on: ubuntu-18.04
+    
+    steps:
+    - name: Check Out
+      uses: actions/checkout@main
+      
+    - name: Prepare the environment
+      run: |
+        docker rmi `docker images -q`
+        sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/sudo apt/sources.list.d
+        sudo apt -y purge azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* powershell openjdk* mysql* php*
+        sudo apt -y autoremove --purge
+        sudo apt -y autoclean
+        sudo apt clean
+        sudo apt update
+        sudo apt -y install python python3 pip pipe cipo
+      
+    - name: Set variables
+      run: |
+        echo "::set-output name=date::$(date +%F)"
+      id: var
+      
+    - name: Install repo
+      run: |
+        mkdir ~/bin
+        curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+        chmod a+x ~/bin/repo
+        export PATH=~/bin:$PATH
+      
+    - name: Initialize repo
+      run: |
+        PATH=~/bin:$PATH
+        mkdir workspace
+        cd workspace
+        echo "::set-output name=pwd::$(pwd)"
+        git config --global user.name "Hikaru's Action-Build-Bot"
+        git config --global user.email "Android@teio.tk"
+        repo init --depth=1 -u ${{ github.event.inputs.LIBRARY_URL }} -b ${{ github.event.inputs.LIBRARY_BRANCH }}
+      id: pwd
+          
+    - name: Repo Sync
+      run: |
+        PATH=~/bin:$PATH
+        cd workspace
+        repo sync -j$(nproc --all)
+      
+    - name: Clone device
+      run: |
+        PATH=~/bin:$PATH
+        cd ${{ steps.pwd.outputs.pwd }}
+        git clone ${{ github.event.inputs.DEVICE_URL }} -b ${{ github.event.inputs.DEVICE_BRANCH }} ./${{ github.event.inputs.DEVICE_PATH }}
+        git clone https://github.com/CaptainThrowback/android_device_qcom_twrp-common.git -b android-10 ./qcom/device/twrp-common
+    - name: Building
+      run: |
+        PATH=~/bin:$PATH
+        cd ${{ steps.pwd.outputs.pwd }}
+        export ALLOW_MISSING_DEPENDENCIES=true
+        source build/envsetup.sh
+        lunch ${{ github.event.inputs.LIBRARY_NAME }}_${{ github.event.inputs.DEVICE_NAME }}-eng 
+        make clean
+        make recoveryimage -j$(nproc --all)
+
+    - name: Upload to Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/*.zip
+          workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/recovery.img
+        name: ${{ github.event.inputs.DEVICE_NAME }}-${{ github.run_id }}
+        tag_name: ${{ github.run_id }}
+        body: Recovery for ${{ github.event.inputs.DEVICE_NAME }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
