@@ -30,61 +30,37 @@ jobs:
         sudo apt -y autoclean
         sudo apt clean
         sudo apt update
-        sudo apt -y install python python3 pip pipe cipo
+        sudo apt -y install python python3 pip pip3 cpio wget
       
     - name: Set variables
       run: |
         echo "::set-output name=date::$(date +%F)"
       id: var
       
-    - name: Install repo
+    - name: Install TWRP generator 
       run: |
-        mkdir ~/bin
-        curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
-        chmod a+x ~/bin/repo
-        export PATH=~/bin:$PATH
+        pip3 install twrpdtgen
+        mkdir dt
+    
+    - name: Download boot or recovery img
+      run: |
+        wget ${{ github.event.inputs.IMG_URL }}
       
-    - name: Initialize repo
+    - name: Start build
       run: |
-        PATH=~/bin:$PATH
-        mkdir workspace
-        cd workspace
-        echo "::set-output name=pwd::$(pwd)"
-        git config --global user.name "Hikaru's Action-Build-Bot"
-        git config --global user.email "Android@teio.tk"
-        repo init --depth=1 -u ${{ github.event.inputs.LIBRARY_URL }} -b ${{ github.event.inputs.LIBRARY_BRANCH }}
-      id: pwd
-          
-    - name: Repo Sync
+        python3 -m twrpdtgen -o dt/ *.img
+
+    - name: ZIP device tree
       run: |
-        PATH=~/bin:$PATH
-        cd workspace
-        repo sync -j$(nproc --all)
-      
-    - name: Clone device
-      run: |
-        PATH=~/bin:$PATH
-        cd ${{ steps.pwd.outputs.pwd }}
-        git clone ${{ github.event.inputs.DEVICE_URL }} -b ${{ github.event.inputs.DEVICE_BRANCH }} ./${{ github.event.inputs.DEVICE_PATH }}
-        git clone https://github.com/CaptainThrowback/android_device_qcom_twrp-common.git -b android-10 ./qcom/device/twrp-common
-    - name: Building
-      run: |
-        PATH=~/bin:$PATH
-        cd ${{ steps.pwd.outputs.pwd }}
-        export ALLOW_MISSING_DEPENDENCIES=true
-        source build/envsetup.sh
-        lunch ${{ github.event.inputs.LIBRARY_NAME }}_${{ github.event.inputs.DEVICE_NAME }}-eng 
-        make clean
-        make recoveryimage -j$(nproc --all)
+        zip -r DeviceTree.zip ./dt
 
     - name: Upload to Release
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/*.zip
-          workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/recovery.img
-        name: ${{ github.event.inputs.DEVICE_NAME }}-${{ github.run_id }}
+          ./dt.zip
+        name: TWRP_Device_Tree-${{ github.run_id }}
         tag_name: ${{ github.run_id }}
-        body: Recovery for ${{ github.event.inputs.DEVICE_NAME }}
+        body: DeviceTree for twrp
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
