@@ -52,7 +52,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          ./dt.zip
+          ./DeviceTree.zip
         name: TWRP_Device_Tree-${{ github.run_id }}
         tag_name: ${{ github.run_id }}
         body: DeviceTree for twrp
