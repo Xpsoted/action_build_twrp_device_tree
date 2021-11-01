@@ -10,14 +10,11 @@
 
 -----
 
-- 3.将recovery.img或boot.img上传至一个可以提供直链下载的位置
-- 这里我推荐直接将img文件上传至这个仓库，然后点进去点view raw，
-- 来获取直链
+- 3.将recovery.img或boot.img上传至一个可以提供直链下载的位置，这里我推荐直接将img文件上传至这个仓库，然后点进去点view raw，来获取直链
 
 -----
 
-- 4.点击actions － make twrp device － run workflow
-- 然后在那个链接框里面输入你刚刚获取的直链
+- 4.点击actions － make twrp device － run workflow，然后在那个链接框里面输入你刚刚获取的直链
 
 -----
 
