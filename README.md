@@ -15,3 +15,18 @@
 - 来获取直链
 
 -----
+
+- 4.点击actions － make twrp device － run workflow
+- 然后在那个链接框里面输入你刚刚获取的直链
+
+-----
+
+ - 5、填写完成后点击 'Run workflow' 开始运行
+
+-----
+## 编译结果
+- 可以在 [Release](../../releases) 下载
+
+## 看不懂想要图文教程?
+- 看看隔壁那个用github编译twrp教程，与这个大同小异端
+- https://github.com/Xpsoted/Action-Recovery-builder/blob/main/README.md
