@@ -10,7 +10,7 @@ on:
       IMG_URL:
         description: 'IMG_URL'
         required: true
-        default: 'https://github.com/Xpsoted/Action-Recovery-builder/releases/download/1404192362/recovery.img'
+        default: 'https://raw.githubusercontent.com/kmiit/action_build_twrp_device_tree/main/boot.zip'
 
 jobs:
   build:
@@ -39,7 +39,7 @@ jobs:
     - name: Download boot or recovery img
       run: |
         wget ${{ github.event.inputs.IMG_URL }}
-      
+        unzip *.zip
     - name: Start build
       run: |
         python3 -m twrpdtgen -o dt/ *.img
