@@ -38,8 +38,8 @@ jobs:
     
     - name: Download boot or recovery img
       run: |
-        wget ${{ github.event.inputs.IMG_URL }}
-        unzip *.zip
+        wget ${{ github.event.inputs.IMG_URL }} && unzip *.zip && rm *.zip
+        
     - name: Start build
       run: |
         python3 -m twrpdtgen -o dt/ *.img
