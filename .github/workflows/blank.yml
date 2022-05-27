@@ -91,6 +91,12 @@ jobs:
         PATH=~/bin:$PATH
         cd ${{ steps.pwd.outputs.pwd }}
         python3 -m twrpdtgen -o device/ *.img
+        
+    - name: ZIP device tree
+      run: |
+         PATH=~/bin:$PATH
+         cd ${{ steps.pwd.outputs.pwd }}
+         zip -r DeviceTree.zip ./device
 
     - name: Start build recovery
       run: |
@@ -107,6 +113,7 @@ jobs:
       with:
         files: |
           workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/recovery.img
+          workspace/DeviceTree.zip
         name: TWRP_Device_Tree-${{ github.run_id }}
         tag_name: ${{ github.run_id }}
         body: DeviceTree for twrp
