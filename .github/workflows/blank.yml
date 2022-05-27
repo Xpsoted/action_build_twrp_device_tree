@@ -77,14 +77,17 @@ jobs:
         
     - name: Install TWRP generator 
       run: |
+        PATH=~/bin:$PATH
         pip3 install twrpdtgen
     
     - name: Download boot or recovery img
       run: |
+        PATH=~/bin:$PATH
         wget ${{ github.event.inputs.IMG_URL }}
       
     - name: Start build device tree
       run: |
+        PATH=~/bin:$PATH
         python3 -m twrpdtgen -o device/ *.img
 
     - name: Start build recovery
