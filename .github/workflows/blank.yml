@@ -85,7 +85,7 @@ jobs:
       
     - name: Start build device tree
       run: |
-        python3 -m twrpdtgen -o devices/ *.img
+        python3 -m twrpdtgen -o device/ *.img
 
     - name: Start build recovery
       run: |
