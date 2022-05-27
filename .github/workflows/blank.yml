@@ -7,6 +7,22 @@ on:
         description: 'LIBRARY_NAME'
         required: true
         default: 'Twrp_Device_Genter'
+      MANIFEST_URL:
+        description: 'MANIFEST_URL'
+        required: true
+        default: 'git://github.com/minimal-manifest-twrp/platform_manifest_twrp_omni.git'
+      MANIFEST_BRANCH:
+        description: 'LIBRARY_BRANCH'
+        required: true
+        default: 'twrp-9.0'
+      DEVICE_NAME:
+        description: 'DEVICE_NAME'
+        required: true
+        default: 'Archytas'
+      MAKEFILE_NAME:
+        description: 'MAKEFILE_NAME'
+        required: true
+        default: 'omni_Archytas'
       IMG_URL:
         description: 'IMG_URL'
         required: true
@@ -23,36 +39,73 @@ jobs:
       
     - name: Prepare the environment
       run: |
+        docker rmi `docker images -q`
+        sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/sudo apt/sources.list.d
+        sudo apt -y purge azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* powershell openjdk* mysql* php*
+        sudo apt -y autoremove --purge
+        sudo apt -y autoclean
+        sudo apt clean
+        sudo apt -y upgrade
         sudo apt update
-        sudo apt -y install python python3 python-pip python3-pip cpio wget
-      
+        sudo apt -y install python python3 python-pip python3-pip cpio wget git-core gnupg flex bison gperf build-essential zip curl zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 lib32ncurses5-dev x11proto-core-dev libx11-dev tree lib32z-dev libgl1-mesa-dev libxml2-utils xsltproc unzip jq bc bison build-essential ccache curl flex g++-multilib gcc-multilib git gnupg gperf lib32ncurses5-dev lib32readline-dev lib32z1-dev liblz4-tool libncurses5-dev libsdl1.2-dev libssl-dev libwxgtk3.0-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev imagemagick libbz2-dev libssl-dev lzma ncftp bash-completion openjdk-8-jdk qemu-user-static
+    
     - name: Set variables
       run: |
         echo "::set-output name=date::$(date +%F)"
       id: var
       
+    - name: Install repo
+      run: |
+        mkdir ~/bin
+        curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+        chmod a+x ~/bin/repo
+        export PATH=~/bin:$PATH
+      
+    - name: Initialize repo
+      run: |
+        PATH=~/bin:$PATH
+        mkdir workspace
+        cd workspace
+        echo "::set-output name=pwd::$(pwd)"
+        git config --global user.name "Hikaru's Action-Build-Bot"
+        git config --global user.email "Android@teio.tk"
+        repo init --depth=1 -u ${{ github.event.inputs.MANIFEST_URL }} -b ${{ github.event.inputs.MANIFEST_BRANCH }}
+      id: pwd
+      
+    - name: Repo Sync
+      run: |
+        PATH=~/bin:$PATH
+        cd workspace
+        repo sync -j$(nproc --all) -f --force-sync
+        ls -al
+        
     - name: Install TWRP generator 
       run: |
         pip3 install twrpdtgen
-        mkdir dt
     
     - name: Download boot or recovery img
       run: |
         wget ${{ github.event.inputs.IMG_URL }}
       
-    - name: Start build
+    - name: Start build device tree
       run: |
-        python3 -m twrpdtgen -o dt/ *.img
+        python3 -m twrpdtgen -o devices/ *.img
 
-    - name: ZIP device tree
+    - name: Start build recovery
       run: |
-        zip -r DeviceTree.zip ./dt
+        PATH=~/bin:$PATH
+        cd ${{ steps.pwd.outputs.pwd }}
+        export ALLOW_MISSING_DEPENDENCIES=true
+        source build/envsetup.sh
+        lunch ${{ github.event.inputs.MAKEFILE_NAME }}-eng 
+        make clean
+        make recoveryimage -j$(nproc --all) 
 
     - name: Upload to Release
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          ./DeviceTree.zip
+          workspace/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/recovery.img
         name: TWRP_Device_Tree-${{ github.run_id }}
         tag_name: ${{ github.run_id }}
         body: DeviceTree for twrp
