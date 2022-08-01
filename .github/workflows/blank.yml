@@ -38,7 +38,7 @@ jobs:
     
     - name: Download boot or recovery img
       run: |
-        wget ${{ github.event.inputs.IMG_URL }}
+        wget "${{ github.event.inputs.IMG_URL }}" 666.img
         ls
       
     - name: Start build
