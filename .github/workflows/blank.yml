@@ -39,7 +39,7 @@ jobs:
     - name: Download boot or recovery img
       run: |
         wget "${{ github.event.inputs.IMG_URL }}"
-        cp download.aspx?UniqueId=248fd0be-0c63-4eb9-94cb-ef83044ddc87&Translate=false&tempauth=eyJ0eXAiOiJKV1QiLCJhbGciOiJub25lIn0.eyJhdWQiOiIwMDAwMDAwMy0wMDAwLTBmZjEtY2UwMC0wMDAwMDAwMDAwMDAvbW9zZWFjZy5zaGFyZXBvaW50LmNvbUBlN2ZkNjk2NS1lMDEwLTRmMzk.1 666.img
+        cp -rf "download.aspx?UniqueId=248fd0be-0c63-4eb9-94cb-ef83044ddc87&Translate=false&tempauth=eyJ0eXAiOiJKV1QiLCJhbGciOiJub25lIn0.eyJhdWQiOiIwMDAwMDAwMy0wMDAwLTBmZjEtY2UwMC0wMDAwMDAwMDAwMDAvbW9zZWFjZy5zaGFyZXBvaW50LmNvbUBlN2ZkNjk2NS1lMDEwLTRmMzk.1" 666.img
         ls
       
     - name: Start build
