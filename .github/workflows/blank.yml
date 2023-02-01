@@ -25,17 +25,9 @@ jobs:
       run: |
         sudo apt update
         sudo apt -y install python python3 python-pip python3-pip cpio wget
-      
-    - name: Set variables
-      run: |
-        echo "::set-output name=date::$(date +%F)"
-      id: var
-      
-    - name: Install TWRP generator 
-      run: |
         pip3 install twrpdtgen
         mkdir dt
-    
+      
     - name: Download boot or recovery img
       run: |
         aria2c "${{ github.event.inputs.IMG_URL }}"
