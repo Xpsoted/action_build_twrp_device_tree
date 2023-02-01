@@ -3,14 +3,10 @@ name: Make TWRP Device
 on:
   workflow_dispatch:
     inputs:
-      LIBRARY_NAME:
-        description: 'LIBRARY_NAME'
-        required: true
-        default: 'Twrp_Device_Genter'
-      IMG_URL:
+      IMG_URL:    
         description: 'IMG_URL'
         required: true
-        default: 'https://github.com/Xpsoted/Action-Recovery-builder/releases/download/1404192362/recovery.img'
+        default: ''
 
 jobs:
   build:
@@ -25,20 +21,13 @@ jobs:
       run: |
         sudo apt update
         sudo apt -y install python python3 python-pip python3-pip cpio wget
-      
-    - name: Set variables
-      run: |
-        echo "::set-output name=date::$(date +%F)"
-      id: var
-      
-    - name: Install TWRP generator 
-      run: |
         pip3 install twrpdtgen
         mkdir dt
-    
+      
     - name: Download boot or recovery img
       run: |
-        wget ${{ github.event.inputs.IMG_URL }}
+        aria2c "${{ github.event.inputs.IMG_URL }}"
+        ls
       
     - name: Start build
       run: |
