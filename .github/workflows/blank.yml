@@ -11,7 +11,7 @@ on:
 jobs:
   build:
     if: github.event.repository.owner.id == github.event.sender.id
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     
     steps:
     - name: Check Out
@@ -20,7 +20,7 @@ jobs:
     - name: Prepare the environment
       run: |
         sudo apt update
-        sudo apt -y install python python3 python-pip python3-pip cpio wget
+        sudo apt -y install python3 python3-pip cpio wget
         pip3 install twrpdtgen
         mkdir dt
       
