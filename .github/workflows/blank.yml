@@ -20,7 +20,8 @@ jobs:
     - name: Prepare the environment
       run: |
         sudo apt update
-        sudo apt -y install python python3 python-pip python3-pip cpio wget
+        sudo apt update && sudo apt install python3-pip
+        sudo apt -y install python3 cpio wget
         pip3 install twrpdtgen
         mkdir dt
       
