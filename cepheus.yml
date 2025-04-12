@@ -1,0 +1,47 @@
+name: Make TWRP Device
+
+on:
+  workflow_dispatch:
+    inputs:
+      IMG_URL:    
+        description: 'IMG_URL'
+        required: true
+        default: ''
+
+jobs:
+  build:
+    if: github.event.repository.owner.id == github.event.sender.id
+    runs-on: ubuntu-20.04
+    
+    steps:
+    - name: Check Out
+      uses: actions/checkout@main
+      
+    - name: Prepare the environment
+      run: |
+        sudo apt update
+        sudo apt -y install python python3 python-pip python3-pip cpio wget
+        pip3 install twrpdtgen
+        mkdir dt
+      
+    - name: Download boot or recovery img
+      run: |
+        aria2c "${{ github.event.inputs.IMG_URL }}"
+        ls
+      
+    - name: Start build
+      run: |
+        python3 -m twrpdtgen -o dt/ *.img
+    - name: ZIP device tree
+      run: |
+        zip -r DeviceTree.zip ./dt
+    - name: Upload to Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          ./DeviceTree.zip
+        name: TWRP_Device_Tree-${{ github.run_id }}
+        tag_name: ${{ github.run_id }}
+        body: DeviceTree for twrp
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
